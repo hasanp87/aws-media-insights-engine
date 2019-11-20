@@ -76,7 +76,7 @@ template_dir="$PWD"
 dist_dir="$template_dir/dist"
 source_dir="$template_dir/../source"
 workflows_dir="$template_dir/../source/workflows"
-webapp_dir="$template_dir/../webapp"
+webapp_dir="$template_dir/../source/webapp"
 transcriber_dir="$template_dir/../video-transcriber"
 
 
@@ -99,7 +99,7 @@ python3 -m venv $VENV
 source $VENV/bin/activate
 pip install boto3 chalice docopt aws-sam-translator pyyaml
 #pip install git+ssh://git.amazon.com/pkg/MediaInsightsEngineLambdaHelper
-export PYTHONPATH="$PYTHONPATH:$template_dir/../lib/MediaInsightsEngineLambdaHelper"
+export PYTHONPATH="$PYTHONPATH:$template_dir/../source/lib/MediaInsightsEngineLambdaHelper"
 echo "PYTHONPATH=$PYTHONPATH"
 if [ $? -ne 0 ]; then
     echo "ERROR: Failed to install required Python libraries."
@@ -123,7 +123,7 @@ mkdir -p "$dist_dir"
 echo "------------------------------------------------------------------------------"
 echo "Building MIEHelper package"
 echo "------------------------------------------------------------------------------"
-cd $template_dir/../lib/MediaInsightsEngineLambdaHelper
+cd $template_dir/../source/lib/MediaInsightsEngineLambdaHelper
 rm -rf build
 rm -rf dist
 rm -rf Media_Insights_Engine_Lambda_Helper.egg-info
@@ -139,11 +139,11 @@ cd $template_dir/lambda_layer_factory/
 rm -f Media_Insights_Engine*.whl
 # TODO: replace these whl build commands with pip install once LambdaHelper package is in Pypi
 #git clone git+ssh://git.amazon.com/pkg/MediaInsightsEngineLambdaHelper
-cp -R $template_dir/../lib/MediaInsightsEngineLambdaHelper .
+cp -R $template_dir/../source/lib/MediaInsightsEngineLambdaHelper .
 cd MediaInsightsEngineLambdaHelper/
 python3 setup.py bdist_wheel
 cp dist/*.whl ../
-cp dist/*.whl $template_dir/../lib/MediaInsightsEngineLambdaHelper/dist/
+cp dist/*.whl $template_dir/../source/lib/MediaInsightsEngineLambdaHelper/dist/
 cd $template_dir/lambda_layer_factory/
 rm -rf MediaInsightsEngineLambdaHelper/
 file=$(ls Media_Insights_Engine*.whl)
