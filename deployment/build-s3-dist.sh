@@ -27,7 +27,8 @@ fi
 bucket_basename=$1
 version=$2
 region=$3
-bucket=$1-$3
+#bucket=$1-$3
+bucket=$1 #builder created bucket already has region appended
 profile="default"
 if [ -n "$4" ]; then profile=$4; fi
 
@@ -79,6 +80,7 @@ workflows_dir="$template_dir/../source/workflows"
 webapp_dir="$template_dir/../source/webapp"
 transcriber_dir="$template_dir/../video-transcriber"
 
+echo "debug template_dir: ${template_dir}"
 
 # Create and activate a temporary Python environment for this script.
 echo "------------------------------------------------------------------------------"
@@ -203,6 +205,12 @@ cp "$workflows_dir/MieCompleteWorkflow.yaml" "$dist_dir/MieCompleteWorkflow.temp
 echo "Copying operator library template to dist directory"
 echo "cp $source_dir/operators/operator-library.yaml $dist_dir/media-insights-operator-library.template"
 cp "$source_dir/operators/operator-library.yaml" "$dist_dir/media-insights-operator-library.template"
+
+echo "debug what is in source_dir?"
+ls $source_dir
+
+echo "debug what is in dist_dir?"
+ls $dist_dir
 
 echo "Updating code source bucket in operator library template with '$bucket'"
 replace="s/%%BUCKET_NAME%%/$bucket/g"
