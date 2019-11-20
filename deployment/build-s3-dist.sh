@@ -214,13 +214,13 @@ ls $dist_dir
 
 echo "Updating code source bucket in operator library template with '$bucket'"
 replace="s/%%BUCKET_NAME%%/$bucket/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-operator-library.template"
-sed -i '' -e $replace "$dist_dir/media-insights-operator-library.template"
+echo "sed -i -e $replace $dist_dir/media-insights-operator-library.template"
+sed -i -e $replace "$dist_dir/media-insights-operator-library.template"
 
 echo "Replacing solution version in operator library template with '$2'"
 replace="s/%%VERSION%%/$2/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-operator-library.template"
-sed -i '' -e $replace "$dist_dir/media-insights-operator-library.template"
+echo "sed -i -e $replace $dist_dir/media-insights-operator-library.template"
+sed -i -e $replace "$dist_dir/media-insights-operator-library.template"
 
 
 # Workflow template
@@ -230,13 +230,13 @@ cp "$template_dir/media-insights-stack.yaml" "$dist_dir/media-insights-stack.tem
 
 echo "Updating code source bucket in workflow template with '$bucket'"
 replace="s/%%BUCKET_NAME%%/$bucket/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-stack.template"
-sed -i '' -e $replace "$dist_dir/media-insights-stack.template"
+echo "sed -i -e $replace $dist_dir/media-insights-stack.template"
+sed -i -e $replace "$dist_dir/media-insights-stack.template"
 
 echo "Replacing solution version in template with '$2'"
 replace="s/%%VERSION%%/$2/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-stack.template"
-sed -i '' -e $replace "$dist_dir/media-insights-stack.template"
+echo "sed -i -e $replace $dist_dir/media-insights-stack.template"
+sed -i -e $replace "$dist_dir/media-insights-stack.template"
 
 # Operations template
 echo "Copying operations template to dist directory"
@@ -245,26 +245,26 @@ cp "$template_dir/media-insights-test-operations-stack.yaml" "$dist_dir/media-in
 
 echo "Updating code source bucket in operations template with '$bucket_basename'"
 replace="s/%%BUCKET_NAME%%/$bucket_basename/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-test-operations-stack.template"
-sed -i '' -e $replace "$dist_dir/media-insights-test-operations-stack.template"
+echo "sed -i -e $replace $dist_dir/media-insights-test-operations-stack.template"
+sed -i -e $replace "$dist_dir/media-insights-test-operations-stack.template"
 
 echo "Replacing solution version in template with '$2'"
 replace="s/%%VERSION%%/$2/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-test-operations-stack.template"
-sed -i '' -e $replace "$dist_dir/media-insights-test-operations-stack.template"
+echo "sed -i -e $replace $dist_dir/media-insights-test-operations-stack.template"
+sed -i -e $replace "$dist_dir/media-insights-test-operations-stack.template"
 
 # Analytics Pipeline template
 echo "Copying analytics pipeline template to dist directory"
 cp "$template_dir/media-insights-dataplane-streaming-stack.template" "$dist_dir/media-insights-dataplane-streaming-stack.template"
 echo "Updating code source bucket in analytics pipeline template with '$bucket'"
 replace="s/%%BUCKET_NAME%%/$bucket/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-dataplane-streaming-stack.template"
-sed -i '' -e $replace "$dist_dir/media-insights-dataplane-streaming-stack.template"
+echo "sed -i -e $replace $dist_dir/media-insights-dataplane-streaming-stack.template"
+sed -i -e $replace "$dist_dir/media-insights-dataplane-streaming-stack.template"
 
 echo "Replacing solution version in analytics pipeline consumer template with '$2'"
 replace="s/%%VERSION%%/$2/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-dataplane-streaming-stack.template"
-sed -i '' -e $replace "$dist_dir/media-insights-dataplane-streaming-stack.template"
+echo "sed -i -e $replace $dist_dir/media-insights-dataplane-streaming-stack.template"
+sed -i -e $replace "$dist_dir/media-insights-dataplane-streaming-stack.template"
 
 
 # Elasticsearch consumer template
@@ -272,13 +272,13 @@ echo "Copying Elasticsearch consumer template to dist directory"
 cp "$source_dir/consumers/elastic/media-insights-elasticsearch.yaml" "$dist_dir/media-insights-elasticsearch.template"
 echo "Updating code source bucket in Elasticsearch consumer template with '$bucket'"
 replace="s/%%BUCKET_NAME%%/$bucket/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-elasticsearch.template"
-sed -i '' -e $replace "$dist_dir/media-insights-elasticsearch.template"
+echo "sed -i -e $replace $dist_dir/media-insights-elasticsearch.template"
+sed -i -e $replace "$dist_dir/media-insights-elasticsearch.template"
 
 echo "Replacing solution version in Elasticsearch consumer template with '$2'"
 replace="s/%%VERSION%%/$2/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-elasticsearch.template"
-sed -i '' -e $replace "$dist_dir/media-insights-elasticsearch.template"
+echo "sed -i -e $replace $dist_dir/media-insights-elasticsearch.template"
+sed -i -e $replace "$dist_dir/media-insights-elasticsearch.template"
 
 # S3 consumer template
 echo "Copying S3 consumer template to dist directory"
@@ -291,13 +291,13 @@ cp "$webapp_dir/media-insights-webapp.yaml" "$dist_dir/media-insights-webapp.tem
 
 echo "Updating code source bucket in Demo Website template with '$bucket'"
 replace="s/%%BUCKET_NAME%%/$bucket/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-webapp.template"
-sed -i '' -e $replace "$dist_dir/media-insights-webapp.template"
+echo "sed -i -e $replace $dist_dir/media-insights-webapp.template"
+sed -i -e $replace "$dist_dir/media-insights-webapp.template"
 
 echo "Replacing solution version in Demo Website template with '$2'"
 replace="s/%%VERSION%%/$2/g"
-echo "sed -i '' -e $replace $dist_dir/media-insights-webapp.template"
-sed -i '' -e $replace "$dist_dir/media-insights-webapp.template"
+echo "sed -i -e $replace $dist_dir/media-insights-webapp.template"
+sed -i -e $replace "$dist_dir/media-insights-webapp.template"
 
 # Transcriber template
 
@@ -306,13 +306,13 @@ cp "$transcriber_dir/cloudformation/transcriber-webapp.yaml" "$dist_dir/transcri
 
 echo "Updating code source bucket in Trancriber App template with '$bucket'"
 replace="s/%%BUCKET_NAME%%/$bucket/g"
-echo "sed -i '' -e $replace $dist_dir/transcriber-webapp.template"
-sed -i '' -e $replace "$dist_dir/transcriber-webapp.template"
+echo "sed -i -e $replace $dist_dir/transcriber-webapp.template"
+sed -i -e $replace "$dist_dir/transcriber-webapp.template"
 
 echo "Replacing solution version in Transcriber App template with '$2'"
 replace="s/%%VERSION%%/$2/g"
-echo "sed -i '' -e $replace $dist_dir/transcriber-webapp.template"
-sed -i '' -e $replace "$dist_dir/transcriber-webapp.template"
+echo "sed -i -e $replace $dist_dir/transcriber-webapp.template"
+sed -i -e $replace "$dist_dir/transcriber-webapp.template"
 
 echo "------------------------------------------------------------------------------"
 echo "Operator failed  lambda"
@@ -1144,6 +1144,8 @@ chalice package --merge-template external_resources.json dist
 # Need to add something here to ensure docopt and aws-sam-translator are present
 ./sam-translate.py --profile=$profile
 
+echo "debug what is in dist at this point?"
+ls dist
 
 echo "cp ./dist/dataplaneapi.json $dist_dir/media-insights-dataplane-api-stack.template"
 cp dist/dataplaneapi.json $dist_dir/media-insights-dataplane-api-stack.template
