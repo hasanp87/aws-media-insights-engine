@@ -300,19 +300,19 @@ echo "sed -i -e $replace $dist_dir/media-insights-webapp.template"
 sed -i -e $replace "$dist_dir/media-insights-webapp.template"
 
 # Transcriber template
+# JM this doesn't seem to exist
+#echo "Copying Transcriber App template to dist directory"
+#cp "$transcriber_dir/cloudformation/transcriber-webapp.yaml" "$dist_dir/transcriber-webapp.template"
 
-echo "Copying Transcriber App template to dist directory"
-cp "$transcriber_dir/cloudformation/transcriber-webapp.yaml" "$dist_dir/transcriber-webapp.template"
+# echo "Updating code source bucket in Trancriber App template with '$bucket'"
+# replace="s/%%BUCKET_NAME%%/$bucket/g"
+# echo "sed -i -e $replace $dist_dir/transcriber-webapp.template"
+# sed -i -e $replace "$dist_dir/transcriber-webapp.template"
 
-echo "Updating code source bucket in Trancriber App template with '$bucket'"
-replace="s/%%BUCKET_NAME%%/$bucket/g"
-echo "sed -i -e $replace $dist_dir/transcriber-webapp.template"
-sed -i -e $replace "$dist_dir/transcriber-webapp.template"
-
-echo "Replacing solution version in Transcriber App template with '$2'"
-replace="s/%%VERSION%%/$2/g"
-echo "sed -i -e $replace $dist_dir/transcriber-webapp.template"
-sed -i -e $replace "$dist_dir/transcriber-webapp.template"
+# echo "Replacing solution version in Transcriber App template with '$2'"
+# replace="s/%%VERSION%%/$2/g"
+# echo "sed -i -e $replace $dist_dir/transcriber-webapp.template"
+# sed -i -e $replace "$dist_dir/transcriber-webapp.template"
 
 echo "------------------------------------------------------------------------------"
 echo "Operator failed  lambda"
@@ -1238,19 +1238,19 @@ echo "We are copying your source into the S3 bucket"
 for file in $dist_dir/*.zip
 do
      echo $file
-     aws s3 cp $file s3://$bucket/media-insights-solution/$2/code/ --profile $profile
+     aws s3 cp $file s3://$bucket/media-insights-solution/$2/code/ #--profile $profile
  done
 
  for file in $dist_dir/*.template
  do
      echo $file
-     aws s3 cp $file s3://$bucket/media-insights-solution/$2/cf/ --profile $profile
+     aws s3 cp $file s3://$bucket/media-insights-solution/$2/cf/ #--profile $profile
  done
 
 echo "We are uploading the MIE web app"
 
-aws s3 cp $webapp_dir/dist s3://$bucket/media-insights-solution/$2/code/website --recursive --profile $profile
-aws s3 cp $webapp_dir/.env s3://$bucket/media-insights-solution/$2/code/website/.env --profile $profile
+aws s3 cp $webapp_dir/dist s3://$bucket/media-insights-solution/$2/code/website --recursive #--profile $profile
+aws s3 cp $webapp_dir/.env s3://$bucket/media-insights-solution/$2/code/website/.env #--profile $profile
 
 #echo "We are uploading the transcriber web app"
 #aws s3 cp $transcriber_dir/web s3://$bucket/media-insights-solution/$2/code/transcriberwebsite --recursive --profile $profile
