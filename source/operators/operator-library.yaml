@@ -88,6 +88,11 @@ Resources:
 
   mediaConvertLambdaRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -131,6 +136,11 @@ Resources:
 
   transcribeRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -204,6 +214,11 @@ Resources:
 
   translateRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -242,6 +257,16 @@ Resources:
 
   pollyRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"
+
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -293,6 +318,11 @@ Resources:
 
   comprehendS3Role:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F38
+            reason: "TODO: IAM role should not allow * resource with PassRole action on its permissions policy"
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -320,6 +350,11 @@ Resources:
 
   comprehendRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -401,6 +436,13 @@ Resources:
 
   rekognitionRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F38
+            reason: "TODO: IAM role should not allow * resource with PassRole action on its permissions policy"
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"    
     Properties:
       ManagedPolicyArns:
         # TODO: Security - Scope this down

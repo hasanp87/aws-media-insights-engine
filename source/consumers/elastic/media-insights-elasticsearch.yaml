@@ -59,6 +59,11 @@ Resources:
 
   ESDomain:
     Type: "AWS::Elasticsearch::Domain"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Condition: DeployESCluster
     Properties:
       AccessPolicies:
@@ -137,6 +142,11 @@ Resources:
   # TODO: Need to clean up this policy with regards to elasticsearch access
   ElasticConsumerRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: Security - Scope this down"
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17

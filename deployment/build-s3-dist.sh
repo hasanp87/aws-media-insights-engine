@@ -1111,7 +1111,7 @@ chalice package --merge-template external_resources.json dist
 #aws cloudformation package --template-file dist/sam.json --s3-bucket $bucket --s3-prefix $prefix --output-template-file "dist/workflowapi_sam.yaml" --profile $profile
 
 # Need to add something here to ensure docopt and aws-sam-translator are present
-./sam-translate.py --profile=$profile
+./sam-translate.py #--profile=$profile
 
 echo "cp ./dist/workflowapi.json $dist_dir/media-insights-workflowapi-stack.template"
 cp dist/workflowapi.json $dist_dir/media-insights-workflowapi-stack.template
@@ -1142,7 +1142,7 @@ chalice package --merge-template external_resources.json dist
 #aws cloudformation package --template-file dist/transformed_sam.json --s3-bucket $bucket --s3-prefix $prefix --output-template-file "dist/dataplaneapi_sam.yaml" --profile $profile
 
 # Need to add something here to ensure docopt and aws-sam-translator are present
-./sam-translate.py --profile=$profile
+./sam-translate.py #--profile=$profile
 
 echo "debug what is in dist at this point?"
 ls dist
