@@ -138,7 +138,7 @@ Resources:
             - id: F16
               reason: "TODO: Public website bucket policy requires a wildcard principal"
             - id: F15
-              reason: "TODO: S3 Bucket policy should not allow * action"
+              reason: "TODO: S3 Bucket policy should not allow * action"
       Properties:
         Bucket:
           Ref: "MediaInsightsWebsiteBucket"

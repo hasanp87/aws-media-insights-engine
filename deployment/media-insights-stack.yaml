@@ -498,7 +498,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W28
-            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -515,7 +515,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W28
-            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -532,7 +532,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W28
-            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -549,7 +549,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W28
-            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -566,7 +566,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W28
-            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -587,7 +587,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W28
-            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -621,7 +621,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W28
-            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
+            reason: "TODO: Resource found with an explicit name, this disallows updates that require replacement of this resource"
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -775,7 +775,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: F38
-            reason: "TODO: IAM role should not allow * resource with PassRole action on its permissions policy"
+            reason: "TODO: IAM role should not allow * resource with PassRole action on its permissions policy"
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
