@@ -37,7 +37,6 @@ Resources:
               reason: "TODO: S3 Bucket should have access logging configured"
             - id: W41
               reason: "TODO: S3 Bucket should have encryption option set"
-
       DeletionPolicy: Retain
       Properties:
         WebsiteConfiguration:
