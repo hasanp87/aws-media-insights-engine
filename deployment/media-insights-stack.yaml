@@ -641,12 +641,12 @@ Resources:
     Metadata:
       cfn_nag:
         rules_to_suppress:
-          - id: F38
+          - id: W51
             reason: "TODO: S3 bucket should likely have a bucket policy"
           - id: W35
             reason: "TODO: S3 Bucket should have access logging configured"
           - id: W41
-            reason: "TODO: S3 Bucket should have encryption option set"          
+            reason: "TODO: S3 Bucket should have encryption option set"
     DeletionPolicy: Retain
     Properties:
       CorsConfiguration:
