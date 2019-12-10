@@ -1118,16 +1118,21 @@ Resources:
     DependsOn: MieUserPool
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "media-insights-dataplane-api-stack.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/media-insights-dataplane-api-stack.template'
       Parameters:
         DataplaneTableName: !Ref DataplaneTable
         DataplaneBucketName: !Ref Dataplane
@@ -1149,16 +1154,21 @@ Resources:
       - MediaInsightsWorkflowApi
       - MediaInsightsDataplaneApiStack
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "media-insights-dataplane-streaming-stack.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/media-insights-dataplane-streaming-stack.template'
       Parameters:
         DynamoStreamArn:
           Fn::GetAtt:
@@ -1173,16 +1183,21 @@ Resources:
   MediaInsightsWorkflowApi:
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "media-insights-workflowapi-stack.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/media-insights-workflowapi-stack.template'
       Parameters:
         UserPoolArn: !GetAtt MieUserPool.Arn
         StageExecutionQueueUrl: !Ref StageExecutionQueue
@@ -1241,16 +1256,21 @@ Resources:
       - MediaInsightsDataplaneApiStack
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "media-insights-operator-library.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/media-insights-operator-library.template'
       Parameters:
         WorkflowCustomResourceArn:
           Fn::GetAtt:
@@ -1269,16 +1289,21 @@ Resources:
       - OperatorLibrary
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "media-insights-test-operations-stack.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/media-insights-test-operations-stack.template'
       Parameters:
         WorkflowCustomResourceArn:
           Fn::GetAtt:
@@ -1300,16 +1325,21 @@ Resources:
       - OperatorLibrary
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "instant_translate.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/instant_translate.template'
       Parameters:
         WorkflowCustomResourceArn:
           Fn::GetAtt:
@@ -1349,16 +1379,21 @@ Resources:
       - OperatorLibrary
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "rekognition.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/rekognition.template'
       Parameters:
         WorkflowCustomResourceArn:
           Fn::GetAtt:
@@ -1374,16 +1409,21 @@ Resources:
       - OperatorLibrary
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "comprehend.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/comprehend.template'
       Parameters:
         WorkflowCustomResourceArn:
           Fn::GetAtt:
@@ -1399,16 +1439,21 @@ Resources:
       - OperatorLibrary
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "MieCompleteWorkflow.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/MieCompleteWorkflow.template'
       Parameters:
         WorkflowCustomResourceArn:
           Fn::GetAtt:
@@ -1426,16 +1471,21 @@ Resources:
       - MediaInsightsDataplaneApiStack
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL:
-        !Join [
-          "/",
-          [
-            "https://s3.amazonaws.com",
-            !FindInMap ["SourceCode", "General", "S3Bucket"],
-            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
-            "media-insights-webapp.template",
-          ],
-        ]
+      TemplateURL: !Join 
+        - ''
+        - - 'https://'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - '.amazonaws.com/'
+          - !FindInMap 
+            - SourceCode
+            - General
+            - TemplateKeyPrefix
+          - '/media-insights-webapp.template'
       Parameters:
         DataplaneEndpoint: !GetAtt MediaInsightsDataplaneApiStack.Outputs.EndpointURL
         WorkflowEndpoint: !GetAtt MediaInsightsWorkflowApi.Outputs.EndpointURL
