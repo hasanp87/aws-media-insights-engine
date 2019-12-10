@@ -26,10 +26,10 @@ from samtranslator.model.exceptions import InvalidDocumentException
 
 iam_client = boto3.client('iam')
 # Use the specified AWS profile if it was provided.
-cli_options = docopt(__doc__)
-if cli_options.get('--profile'):
-    session = boto3.Session(profile_name=cli_options.get('--profile'))
-    iam_client = session.client('iam')
+# cli_options = docopt(__doc__)
+# if cli_options.get('--profile'):
+#     session = boto3.Session(profile_name=cli_options.get('--profile'))
+#     iam_client = session.client('iam')
 cwd = os.getcwd()
 
 
