@@ -44,6 +44,10 @@ def main():
         sam_template = yaml_parse(f)
 
     try:
+        mpl = ManagedPolicyLoader(iam_client)
+        policymap = mpl.load()
+        print("debug policy map: ")
+        print(policymap)
         cloud_formation_template = transform(
             sam_template, {}, ManagedPolicyLoader(iam_client))
         cloud_formation_template_prettified = json.dumps(
