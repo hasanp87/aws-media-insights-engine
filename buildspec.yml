@@ -23,9 +23,6 @@ phases:
       - echo "Open Source Dist completed `date`"
 
   post_build:
-    runtime-versions:
-      nodejs: 8
-      python: 3.7
     commands:
       - echo "Retrieving next stage buildspec `date` in `pwd`"
       - aws s3 cp s3://solutions-build-assets/changelog-spec.yml ../buildspec.yml
