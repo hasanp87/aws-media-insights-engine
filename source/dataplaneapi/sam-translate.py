@@ -49,7 +49,6 @@ def main():
     policymap = f.read()
 
     try:
-        #read in the
         # cloud_formation_template = transform(
         #     sam_template, {}, ManagedPolicyLoader(iam_client))
         sam_parser = Parser()
