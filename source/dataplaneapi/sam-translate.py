@@ -22,6 +22,8 @@ from samtranslator.public.translator import ManagedPolicyLoader
 from samtranslator.translator.transform import transform
 from samtranslator.yaml_helper import yaml_parse
 from samtranslator.model.exceptions import InvalidDocumentException
+from samtranslator.translator.translator import Translator
+from samtranslator.parser.parser import Parser
 
 
 iam_client = boto3.client('iam')
@@ -37,19 +39,22 @@ def main():
     print(cwd)
     input_file_path = cwd+'/dist/sam.json'
     output_file_path = cwd+'/dist/dataplaneapi.json'
-
+    managed_policies = './managed_policies.json'
     print(input_file_path)
 
     with open(input_file_path, 'r') as f:
         sam_template = yaml_parse(f)
 
+    f = open(managed_policies, "r")
+    policymap = f.read()
+
     try:
-        mpl = ManagedPolicyLoader(iam_client)
-        policymap = mpl.load()
-        print("debug policy map: ")
-        print(policymap)
-        cloud_formation_template = transform(
-            sam_template, {}, ManagedPolicyLoader(iam_client))
+        #read in the
+        # cloud_formation_template = transform(
+        #     sam_template, {}, ManagedPolicyLoader(iam_client))
+        sam_parser = Parser()
+        translator = Translator(policymap, sam_parser)
+        cloud_formation_template = translator.translate(sam_template, parameter_values={})
         cloud_formation_template_prettified = json.dumps(
             cloud_formation_template, indent=2)
 
