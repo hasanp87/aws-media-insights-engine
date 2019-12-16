@@ -191,7 +191,21 @@
           }
         ]
       },
-      "Type": "AWS::IAM::Role"
+      "Type": "AWS::IAM::Role",
+      "Metadata": {
+        "cfn_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "F3",
+              "reason": "TODO: IAM role should not allow * action on its permissions policy"
+            },
+            {
+              "id": "W11",
+              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
+            }
+          ]
+        }
+      }
     },
     "WorkflowCustomResourceRole": {
       "Properties": {
@@ -268,7 +282,25 @@
           }
         ]
       },
-      "Type": "AWS::IAM::Role"
+      "Type": "AWS::IAM::Role",
+      "Metadata": {
+        "cfn_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "F38",
+              "reason": "TODO: IAM role should not allow * resource with PassRole action on its permissions policy"
+            },
+            {
+              "id": "F3",
+              "reason": "TODO: IAM role should not allow * action on its permissions policy"
+            },
+            {
+              "id": "W11",
+              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
+            }
+          ]
+        }
+      }
     },
     "APIHandler": {
       "Type": "AWS::Lambda::Function",
@@ -2149,6 +2181,16 @@
     },
     "RestAPIDeploymentd1ff065705": {
       "Type": "AWS::ApiGateway::Deployment",
+      "Metadata": {
+        "cfn_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "W45",
+              "reason": "TODO: ApiGateway should have access logging configured."
+            }
+          ]
+        }
+      },
       "Properties": {
         "Description": "RestApi deployment id: d1ff0657052308e50da73c37538264f3e9f6a205",
         "RestApiId": {

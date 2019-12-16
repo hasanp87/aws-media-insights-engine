@@ -110,7 +110,21 @@
           }
         ]
       },
-      "Type": "AWS::IAM::Role"
+      "Type": "AWS::IAM::Role",
+      "Metadata": {
+        "cfn_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "W11",
+              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
+            },
+            {
+              "id": "F3",
+              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
+            }
+          ]
+        }
+      }
     },
     "APIHandler": {
       "Type": "AWS::Lambda::Function",
@@ -976,6 +990,16 @@
     },
     "RestAPIDeploymente3a7752812": {
       "Type": "AWS::ApiGateway::Deployment",
+      "Metadata": {
+          "cfn_nag": {
+              "rules_to_suppress": [
+                  {
+                      "id": "W45",
+                      "reason": "TODO: ApiGateway should have access logging configured"
+                  }
+              ]
+          }
+      },
       "Properties": {
         "Description": "RestApi deployment id: e3a7752812c409c7e920bd01e397c4d634ce1f29",
         "RestApiId": {

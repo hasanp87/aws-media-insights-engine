@@ -39,6 +39,11 @@ Resources:
 
   AnalyticsStream:
     Type: "AWS::Kinesis::Stream"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W49
+            reason: "TODO: Kinesis Stream should specify StreamEncryption. EncryptionType should be KMS and specify KMS Key Id."
     Properties:
         ShardCount: !Ref KinesisShardCount
 
@@ -77,6 +82,11 @@ Resources:
 # iam stuff
   LambdaStreamRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO: IAM role should not allow * resource on its permissions policy"
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17

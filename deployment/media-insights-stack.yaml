@@ -894,18 +894,33 @@ Resources:
 
   WorkflowExecutionLambdaDeadLetterQueue:
     Type: "AWS::SQS::Queue"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W48
+            reason: "TODO: SQS Queue should specify KmsMasterKeyId property"
     Properties:
       QueueName: "WorkflowExecutionLambdaDLQ"
       MessageRetentionPeriod: 43200 # #Maximum, 12 hours in seconds.
 
   StageExecutionDeadLetterQueue:
     Type: "AWS::SQS::Queue"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W48
+            reason: "TODO: SQS Queue should specify KmsMasterKeyId property"
     Properties:
       QueueName: "StageExecutionDLQ"
       MessageRetentionPeriod: 43200 # #Maximum, 12 hours in seconds.
 
   StageExecutionQueue:
     Type: AWS::SQS::Queue
+      Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W48
+            reason: "TODO: SQS Queue should specify KmsMasterKeyId property"
     Properties:
       QueueName: StageExecution
       VisibilityTimeout: 43200 #Maximum, 12 hours in seconds.  Stages are long running

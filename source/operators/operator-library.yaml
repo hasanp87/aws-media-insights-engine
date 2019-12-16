@@ -30,6 +30,11 @@ Resources:
   # SNS topic for storing the output of async Rekognition jobs:
   snsRekognitionTopic:
     Type: "AWS::SNS::Topic"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W47
+            reason: "TODO: SNS Topic should specify KmsMasterKeyId property"
     Properties:
       DisplayName: "SNS Role for Rekognition"
 
