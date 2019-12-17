@@ -3,8 +3,8 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 8
-      python: 3.7
+      nodejs: 12
+      python: 3.8
     commands:
       - echo "nothing to do in install"
   pre_build:
