@@ -916,7 +916,7 @@ Resources:
 
   StageExecutionQueue:
     Type: AWS::SQS::Queue
-      Metadata:
+    Metadata:
       cfn_nag:
         rules_to_suppress:
           - id: W48
