@@ -44,6 +44,7 @@ def main():
 
     with open(input_file_path, 'r') as f:
         sam_template = yaml_parse(f)
+        print("sam_template:")
 
     f = open(managed_policies, "r")
     policymap = f.read()
