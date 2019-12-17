@@ -44,7 +44,9 @@ def main():
 
     with open(input_file_path, 'r') as f:
         sam_template = yaml_parse(f)
+        #debug
         print("sam_template:")
+        print(sam_template)
 
     f = open(managed_policies, "r")
     policymap = f.read()
@@ -57,7 +59,9 @@ def main():
         cloud_formation_template = translator.translate(sam_template, parameter_values={})
         cloud_formation_template_prettified = json.dumps(
             cloud_formation_template, indent=2)
-
+        #debug
+        print(cloud_formation_template_prettified)
+        
         with open(output_file_path, 'w') as f:
             f.write(cloud_formation_template_prettified)
 
