@@ -323,6 +323,18 @@
         }
         }
       }
+    },
+    "RestAPIDeployment": {
+      "Metadata": {
+        "cfn_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "W45",
+              "reason": "TODO: ApiGateway should have access logging configured."
+            }
+          ]
+        }
+      }
     }
   },
   "Outputs": {
