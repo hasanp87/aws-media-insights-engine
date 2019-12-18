@@ -1113,6 +1113,10 @@ chalice package --merge-template external_resources.json dist
 # Need to add something here to ensure docopt and aws-sam-translator are present
 ./sam-translate.py #--profile=$profile
 
+
+# insert suppress cfn_nag warning
+sed -i '/\s\?RestAPIDeployment.*:/a "Metadata": {\n"cfn_nag": {\n"rules_to_suppress": [\n{\n"id": "W45",\n"reason": "TODO: ApiGateway should have access logging configured"\n}]}},\n' ./dist/workflowapi.json
+
 echo "cp ./dist/workflowapi.json $dist_dir/media-insights-workflowapi-stack.template"
 cp dist/workflowapi.json $dist_dir/media-insights-workflowapi-stack.template
 
@@ -1144,8 +1148,7 @@ chalice package --merge-template external_resources.json dist
 # Need to add something here to ensure docopt and aws-sam-translator are present
 ./sam-translate.py #--profile=$profile
 
-echo "debug what is in dist at this point?"
-ls dist
+sed -i '/\s\?RestAPIDeployment.*:/a "Metadata": {\n"cfn_nag": {\n"rules_to_suppress": [\n{\n"id": "W45",\n"reason": "TODO: ApiGateway should have access logging configured"\n}]}},\n' ./dist/dataplaneapi.json
 
 echo "cp ./dist/dataplaneapi.json $dist_dir/media-insights-dataplane-api-stack.template"
 cp dist/dataplaneapi.json $dist_dir/media-insights-dataplane-api-stack.template
