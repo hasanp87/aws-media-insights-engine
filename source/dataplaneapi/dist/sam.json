@@ -29,19 +29,6 @@
   "Resources": {
     "ApiHandlerRole": {
       "Type": "AWS::IAM::Role",
-      "Metadata": {
-        "cfn_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "W11",
-              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
-            },
-            {
-              "id": "F3",
-              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
-            }
-          ]
-        }
       },
       "Properties": {
         "AssumeRolePolicyDocument": {

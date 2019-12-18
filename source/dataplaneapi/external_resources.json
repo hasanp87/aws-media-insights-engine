@@ -23,6 +23,20 @@
   },
   "Resources": {
     "ApiHandlerRole": {
+      "Metadata": {
+        "cfn_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "W11",
+              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
+            },
+            {
+              "id": "F3",
+              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
+            }
+          ]
+        }
+      },
       "Properties": {
         "Policies": [
           {
@@ -77,6 +91,16 @@
       }
     },
     "RestAPI": {
+      "Metadata": {
+        "cfn_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "W45",
+              "reason": "TODO: ApiGateway should have access logging configured"
+            }
+          ]
+        }
+      },
       "Properties": {
         "DefinitionBody": {
           "securityDefinitions": {

@@ -36,24 +36,6 @@
   "Resources": {
     "WorkflowCustomResourceRole": {
       "Type": "AWS::IAM::Role",
-      "Metadata": {
-        "cfn_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "F38",
-              "reason": "TODO: IAM role should not allow * resource with PassRole action on its permissions policy"
-            },
-            {
-              "id": "F3",
-              "reason": "TODO: IAM role should not allow * action on its permissions policy"
-            },
-            {
-              "id": "W11",
-              "reason": "TODO: IAM role should not allow * resource on its permissions policy"
-            }
-          ]
-        }
-      },
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
@@ -2286,16 +2268,6 @@
     },
     "RestAPIDeployment4ac8eaa08f": {
       "Type": "AWS::ApiGateway::Deployment",
-      "Metadata": {
-        "cfn_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "W45",
-              "reason": "TODO: ApiGateway should have access logging configured."
-            }
-          ]
-        }
-      },
       "Properties": {
         "Description": "RestApi deployment id: 4ac8eaa08fd695ccc26ecc57de0e156c6f3f920d",
         "RestApiId": {
