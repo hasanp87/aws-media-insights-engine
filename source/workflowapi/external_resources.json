@@ -173,7 +173,7 @@
         ]
       }
     },
-    "WorkflowCustomResource": {
+    "WorkflowCustomResourceRole": {
       "Metadata": {
         "cfn_nag": {
           "rules_to_suppress": [
@@ -191,7 +191,9 @@
             }
           ]
         }
-      },
+      }    
+    },
+    "WorkflowCustomResource": {
       "Properties": {
         "Environment": {
           "Variables": {
