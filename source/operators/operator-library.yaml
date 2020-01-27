@@ -1146,6 +1146,76 @@ Resources:
           DATAPLANE_BUCKET: !Ref "DataPlaneBucket"
           botoConfig: '{"user_agent": "aws-tm-mie/python3.7/lambda"}'
 
+  PoseDetectRole:
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies: 
+        - 
+          PolicyName: "poseDetectLambdaPolicy"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Effect: "Allow"
+                Action: 
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                Resource: !Sub "arn:aws:s3:::${DataPlaneBucket}/*"
+              - 
+                Effect: "Allow"
+                Action: "lambda:InvokeFunction"
+                Resource: !Ref DataPlaneHandlerArn
+              - 
+                Effect: "Allow"
+                Action: "sagemaker:InvokeEndpoint"
+                Resource: 'arn:aws:sagemaker:us-east-1:208480242416:endpoint/gluoncv-yolo3-demo-2020-01-27-10-35-44'
+
+                Effect: "Allow"
+                Action: "sagemaker:InvokeEndpoint"
+                Resource: 'arn:aws:sagemaker:us-east-1:208480242416:endpoint/gluoncv-alpha-pose-demo-2020-01-24-18-45-13'
+
+  BatchPoseDetection:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "start_pose_detection.lambda_handler"
+      Layers:
+        - !Ref MediaInsightsEnginePython37Layer
+      Role: !GetAtt "PoseDetectRole.Arn"
+      Code:
+        S3Bucket: !FindInMap ["SourceCode", "General", "S3Bucket"]
+        S3Key:
+          !Join [
+            "/",
+            [
+            !FindInMap ["SourceCode", "General", "KeyPrefix"],
+            "start_batch_pose_detection.zip",
+            ],
+          ]
+      Runtime: "python3.7"
+      Environment:
+        Variables:
+          REKOGNITION_SNS_TOPIC_ARN: !Ref "snsRekognitionTopic"
+          REKOGNITION_ROLE_ARN: !GetAtt "rekognitionRole.Arn"
+          OPERATOR_NAME: "BatchPoseDetection"
+          ENDPOINT_NAME_1: "GluonCV-yolo3-Demo-2020-01-27-10-35-44"
+          ENDPOINT_NAME_2: "GluonCV-alpha-pose-Demo-2020-01-24-18-45-13"
+          MIN_CONFIDENCE: "50"
+          DataplaneEndpoint: !Ref "DataPlaneEndpoint"
+          DATAPLANE_BUCKET: !Ref "DataPlaneBucket"
+          botoConfig: '{"user_agent": "aws-tm-mie/python3.7/lambda"}'
+
+
   startPersonTracking:
     Type: "AWS::Lambda::Function"
     Properties:
@@ -1851,6 +1921,17 @@ Resources:
       MonitorLambdaArn: !GetAtt checkLabelDetection.Arn
       StateMachineExecutionRoleArn: !Ref StepFuctionRoleArn
 
+  BatchPoseDetectionOperation:
+    Type: Custom::CustomResource
+    Properties:
+      ServiceToken: !Ref WorkflowCustomResourceArn
+      ResourceType: "Operation"
+      Name: "BatchPoseDetection"
+      Configuration: { "MediaType": "Image", "Enabled": true }
+      Type: "Sync"
+      StartLambdaArn: !GetAtt BatchPoseDetection.Arn
+      StateMachineExecutionRoleArn: !Ref StepFuctionRoleArn
+  
   labelDetectionOperationImage:
     Type: Custom::CustomResource
     Properties:
@@ -2004,6 +2085,11 @@ Outputs:
     Value: !GetAtt labelDetectionOperation.Name
     Export:
       Name: !Join [":", [!Ref "AWS::StackName", LabelDetection]]
+  BatchPoseDetection:
+    Description: "Batch Pose detection operator"
+    Value: !GetAtt BatchPoseDetectionOperation.Name
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", BatchPoseDetection]]
   PersonTracking:
     Description: "Person tracking"
     Value: !GetAtt personTrackingOperation.Name

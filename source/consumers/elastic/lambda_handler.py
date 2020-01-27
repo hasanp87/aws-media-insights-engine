@@ -14,7 +14,7 @@ dataplane_bucket = os.environ['DataplaneBucket']
 s3 = boto3.client('s3')
 
 # These names are the lowercase version of OPERATOR_NAME defined in /source/operators/operator-library.yaml
-supported_operators = ["transcribe", "translate", "genericdatalookup", "labeldetection", "celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "key_phrases"]
+supported_operators = ["transcribe", "translate", "genericdatalookup", "labeldetection", "celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "key_phrases","batchposedetection","frameextractor"]
 
 
 def normalize_confidence(confidence_value):
@@ -393,6 +393,54 @@ def process_logo_detection(asset, workflow, results):
                     print("Item: " + json.dumps(item))
     bulk_index(es, asset, "logos", extracted_items)
 
+def process_pose_detection(asset, workflow, results):
+    # This function puts pose detection data in Elasticsearch.
+    # The pose detection raw data was in inconsistent with Confidence and BoundingBox fields in Rekognition.
+    # So, those fields are modified in this function, accordingly.
+    metadata = json.loads(results)
+    es = connect_es(es_endpoint)
+    extracted_items = []
+    # We can tell if json results are paged by checking to see if the json results are an instance of the list type.
+    # We can tell if json results are paged by checking to see if the json results are an instance of the list type.
+    if isinstance(metadata, list):
+        # handle paged results
+        for page in metadata:
+            if "frames_result" in page:
+                for item in page["frames_result"]:
+                    try:
+                        item["Operator"] = "batch_pose_detection"
+                        item["Workflow"] = workflow
+                        item["Confidence"] = 75
+                        if "Pose" in item:
+                            # Flatten the inner Logo array
+                            item["segments"]=item["Pose"]["segments"]
+                            # Delete the flattened array
+                            del item["Pose"]
+                        print(asset, ":", item)
+                        extracted_items.append(item)
+                    except KeyError as e:
+                        print("KeyError: " + str(e))
+                        print("Item: " + json.dumps(item))
+    else:
+        # these results are not paged
+        if "frames_result" in metadata:
+            for item in metadata["frames_result"]:
+                try:
+                    item["Operator"] = "batch_pose_detection"
+                    item["Workflow"] = workflow
+                    item["Confidence"] = 75
+                    if "Pose" in item:
+                        # Flatten the inner Logo array
+                        item["segments"]=item["Pose"]["segments"]
+                        # Delete the flattened array
+                        del item["Pose"]
+                    print(asset, ":", item)
+                    extracted_items.append(item)
+                except KeyError as e:
+                    print("KeyError: " + str(e))
+                    print("Item: " + json.dumps(item))
+    bulk_index(es, asset, "poses", extracted_items)
+
 def process_label_detection(asset, workflow, results):
     # Rekognition label detection puts labels on an inner array in its JSON result, but for ease of search in Elasticsearch we need those results as a top level json array. So this function does that.
     metadata = json.loads(results)
@@ -677,6 +725,8 @@ def lambda_handler(event, context):
                             process_logo_detection(asset_id, workflow, metadata["Results"])
                         if operator == "labeldetection":
                             process_label_detection(asset_id, workflow, metadata["Results"])
+                        if operator == "batchposedetection":
+                            process_pose_detection(asset_id, workflow, metadata["Results"])
                         if operator == "celebrityrecognition":
                             process_celebrity_detection(asset_id, workflow, metadata["Results"])
                         if operator == "contentmoderation":
