@@ -87,10 +87,9 @@ def lambda_handler(event, context):
             frame_result = []
             segments  = np.asarray(response['pred_coords'])
             frame_id, file_extension = os.path.splitext(os.path.basename(img_s3key))
-            for i in segments[0]:  # we are concerned with the pose of only one person right now
-                frame_result.append({'frame_id': frame_id[3:],
+            frame_result.append({'frame_id': frame_id[3:],
                                 'Pose': {
-                                    'segment': [i[0],i[1]]
+                                    'points': segments[0]  
                                 },
                                 'Timestamp': chunk_details['timestamps'][frame_id]})
             if len(frame_result)>0: chunk_result+=frame_result

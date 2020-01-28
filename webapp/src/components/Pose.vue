@@ -226,39 +226,36 @@
             // Save label name overlaying on video timeline
             markers.push({'time': record.Timestamp/1000, 'text': record.Name, 'overlayText': record.Name});
             // Save bounding box info if it exists
-            if (record.point) {
+            if (record.points) {
               // TODO: move image processing to a separate component
               if (this.mediaType === "image/jpg") {
                 const pointsinfo = {
                   'instance': i,
                   'list' = new List()
-                  list.add([record.point[0],record.point[1]])
-                  'x': record.BoundingBox.Left * canvas.width,
-                  'y': record.BoundingBox.Top * canvas.height,
-                  'width': record.BoundingBox.Width * canvas.width,
-                  'height': record.BoundingBox.Height * canvas.height
+                  for (point in record.points) {### this was a 2d numpy array, how to iterate here ?
+                    list.add(point[0],point[1])         
+
+                  } 
+                  
                 };
-                boxMap.set(i++, [boxinfo])
+                pointsMap.set(i++, [pointsinfo])
               } else {
                 // Use time resolution of 0.1 second
                 const timestamp = Math.round(record.Timestamp / 100);
                 const boxinfo = {
                   'instance': 0,
                   'timestamp': Math.ceil(record.Timestamp / 100),
-                  'name': record.Name,
-                  'confidence': (record.Confidence * 1).toFixed(2),
-                  'x': record.BoundingBox.Left * canvas.width,
-                  'y': record.BoundingBox.Top * canvas.height,
-                  'width': record.BoundingBox.Width * canvas.width,
-                  'height': record.BoundingBox.Height * canvas.height
+                  'list' = new List()
+                  for (point in record.points) {### this was a 2d numpy array, how to iterate here ?
+                    list.add(point[0],point[1])   
                 };
-                boxMap.set(timestamp, [boxinfo])
+                pointsMap.set(timestamp, [pointsinfo])
               }
             }
           }
         }.bind(this));
-        if (boxMap.size > 0) {
-          this.drawBoxes(boxMap);
+        if (pointsMap.size > 0) {
+          this.drawLines(pointsMap);
         }
         // TODO: move image processing to a separate component
         if (this.mediaType === "video/mp4") {
@@ -298,7 +295,7 @@
           this.isBusy = false
         }
       },
-      drawBoxes: function(boxMap) {
+      drawLines: function(pointsMap) {
         var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
         // TODO: move image processing to a separate component
@@ -311,12 +308,13 @@
           ctx.textBaseline = "middle";
           ctx.fillStyle = "red";
           // For each box instance...
-          boxMap.forEach( i => {
+          pointsMap.forEach( i => {
             var drawMe = i[0];
             if (drawMe) {
-              ctx.rect(drawMe.x, drawMe.y, drawMe.width, drawMe.height);
-              // Draw object name and confidence score
-              ctx.fillText(drawMe.name + " (" + drawMe.confidence + "%)", (drawMe.x + drawMe.width / 2), drawMe.y - 10);
+              ctx.moveTo(drawMe[0][0], [0][1]); 
+              for (j =1 ; j < drawMe.length; j++) {
+                  ctx.lineTo(drawMe[j][0], [j][1]);
+              }
               ctx.stroke();
             }
           });
@@ -328,7 +326,7 @@
           // ...then reset the old canvas refresh interval.
           clearInterval(this.canvasRefreshInterval)
         }
-        // Look for and draw bounding boxes every 100ms
+        // Look for and draw segments every 100ms
         const interval_ms = 100;
         const erase_on_iteration = 2;
         var i = 0;
@@ -348,11 +346,12 @@
           // Get current player timestamp to the nearest 1/10th second
           var player_timestamp = Math.round(this.player.currentTime()*10.0);
           // If we have a box for the player's timestamp...
-          if (boxMap.has(player_timestamp)) {
-            var drawMe = boxMap.get(player_timestamp)[0];
-            ctx.rect(drawMe.x, drawMe.y, drawMe.width, drawMe.height);
-            // Draw object name and confidence score
-            ctx.fillText(drawMe.name + " (" + drawMe.confidence + "%)", (drawMe.x+drawMe.width/2), drawMe.y-10);
+          if (pointsMap.has(player_timestamp)) {
+            var drawMe = pointsMap.get(player_timestamp)[0];
+            ctx.moveTo(drawMe[0][0], [0][1]); 
+            for (j =1 ; j < drawMe.length; j++) {
+                ctx.lineTo(drawMe[j][0], [j][1]);
+            }
           }
           ctx.stroke();
         }.bind(this), interval_ms);
