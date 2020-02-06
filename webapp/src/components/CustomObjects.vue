@@ -9,7 +9,7 @@
           Confidence Threshold<br>
           <input
             type="range"
-            value="70"
+            value="90"
             min="1"
             max="99"
             step="1"
@@ -31,7 +31,7 @@
         <div class="wrapper">
           <br>
           <template v-for="label in sorted_unique_labels">
-            <template v-if="points_available.includes(label[0])">
+            <template v-if="boxes_available.includes(label[0])">
               <b-button
                 v-b-tooltip.hover
                 variant="outline-dark"
@@ -71,7 +71,7 @@
           </p>
           <hr>
           <p class="text-muted">
-            * Indicates pose is available.
+            * Indicates bounding boxes are available.
           </p>
         </div>
       </b-row>
@@ -90,23 +90,23 @@
   import { mapState } from 'vuex'
 
   export default {
-    name: "Pose",
+    name: "CustomLabels",
     components: {
       Loading
     },
     data() {
       return {
-        Confidence: 70,
+        Confidence: 75,
         high_confidence_data: [],
         elasticsearch_data: [],
         count_distinct_labels: 0,
         count_labels: 0,
         isBusy: false,
-        operator: 'batchPoseDetection',
+        operator: 'batchCustomLabelDetection',
         canvasRefreshInterval: undefined,
         timeseries: new Map(),
         selectedLabel: '',
-        points_available: []
+        boxes_available: []
       }
     },
     computed: {
@@ -117,11 +117,10 @@
         const unique_labels = new Map();
         // sort and count unique labels for label mouse over events
         es_data.forEach(function (record) {
-          record.Name = "Pose"
           unique_labels.set(record.Name, unique_labels.get(record.Name) ? unique_labels.get(record.Name) + 1 : 1)
-          if (record.points) {
-            // Save this label name to a list of labels that have bounding points
-            this.savePointsLabel(record.Name)
+          if (record.BoundingBox) {
+            // Save this label name to a list of labels that have bounding boxes
+            this.saveBoxedLabel(record.Name)
           }
         }.bind(this));
         var sorted_unique_labels = new Map([...unique_labels.entries()].slice().sort((a, b) => b[1] - a[1]))
@@ -142,7 +141,7 @@
     },
     deactivated: function () {
       console.log('activated component:', this.operator);
-      this.points_available = [];
+      this.boxes_available = [];
       this.selectedLabel = '';
       clearInterval(this.canvasRefreshInterval);
       var canvas = document.getElementById('canvas');
@@ -160,9 +159,9 @@
       this.count_labels = 0;
     },
     methods: {
-      savePointsLabel(label_name) {
-        if (!this.points_available.includes(label_name)) {
-          this.points_available.push(label_name);
+      saveBoxedLabel(label_name) {
+        if (!this.boxes_available.includes(label_name)) {
+          this.boxes_available.push(label_name);
         }
       },
       countLabels(unique_count, total_count) {
@@ -190,7 +189,7 @@
         // this function updates markers in the video player and is called when someone clicks on a label button
         this.selectedLabel = label;
         // clear canvas for redrawing
-        this.points_available = [];
+        this.boxes_available = [];
         clearInterval(this.canvasRefreshInterval);
         var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
@@ -200,44 +199,38 @@
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "red";
-        // initialize lists of points and markers to be drawn
-        var pointsMap = new Map();
+        // initialize lists of boxes and markers to be drawn
+        var boxMap = new Map();
         var markers = [];
         var es_data = this.elasticsearch_data
         var instance = 0;
         es_data.forEach(function (record) {
-          record.Name = "Pose"
           if (record.Name === label) {
             markers.push({'time': record.Timestamp/1000, 'text': record.Name, 'overlayText': record.Name})
-            // Save points info if it exists
-            if (record.points) {
+            // Save bounding box info if it exists
+            if (record.BoundingBox) {
               // Use time resolution of 0.1 second
               const timestamp = Math.round(record.Timestamp/100);
-              if (pointsMap.has(timestamp)) {
-                const pointsinfo = {'instance':instance++, 'timestamp':Math.ceil(record.Timestamp/100), 'name':record.Name, 'confidence':record.confidence, 'points':record.points};
-                
-                // 'x':record.points.Left*canvas.width, 'y':record.points.Top*canvas.height, 'width':record.points.Width*canvas.width, 'height':record.points.Height*canvas.height};
-                pointsMap.get(timestamp).push(pointsinfo)
+              if (boxMap.has(timestamp)) {
+                const boxinfo = {'instance':instance++, 'timestamp':Math.ceil(record.Timestamp/100), 'name':record.Name, 'confidence':(record.Confidence * 1).toFixed(2), 'x':record.BoundingBox.Left*canvas.width, 'y':record.BoundingBox.Top*canvas.height, 'width':record.BoundingBox.Width*canvas.width, 'height':record.BoundingBox.Height*canvas.height};
+                boxMap.get(timestamp).push(boxinfo)
               } else {
                 instance = 0;
-                const pointsinfo = {'instance':instance++, 'timestamp':Math.ceil(record.Timestamp/100), 'name':record.Name, 'confidence':record.confidence, 'points':record.points};
-                //'x':record.points.Left*canvas.width, 'y':record.points.Top*canvas.height, 'width':record.points.Width*canvas.width, 'height':record.points.Height*canvas.height};
-                pointsMap.set(timestamp, [pointsinfo])
+                const boxinfo = {'instance':instance++, 'timestamp':Math.ceil(record.Timestamp/100), 'name':record.Name, 'confidence':(record.Confidence * 1).toFixed(2), 'x':record.BoundingBox.Left*canvas.width, 'y':record.BoundingBox.Top*canvas.height, 'width':record.BoundingBox.Width*canvas.width, 'height':record.BoundingBox.Height*canvas.height};
+                boxMap.set(timestamp, [boxinfo])
               }
             }
           }
         }.bind(this));
-        if (pointsMap.size > 0) {
-          this.drawPoints(pointsMap);
+        if (boxMap.size > 0) {
+          this.drawBoxes(boxMap);
         }
         // redraw markers on video timeline
         this.player.markers.removeAll();
         this.player.markers.add(markers);
       },
       async fetchAssetData () {
-          let query = 'AssetId:'+this.$route.params.asset_id+' Operator:'+this.operator+' Workflow: 52803f91-8790-4a1f-b911-1b0a49af76b9';
-          //table tennis ' Workflow: 52803f91-8790-4a1f-b911-1b0a49af76b9';
-          //2 speakers ' Workflow: c8af43e1-1173-42ab-8015-49148c71611c';
+          let query = 'AssetId:'+this.$route.params.asset_id+' Confidence:>'+this.Confidence+' Operator:'+this.operator
           let apiName = 'mieElasticsearch';
           let path = '/_search';
           let apiParams = {
@@ -266,7 +259,7 @@
             this.isBusy = false
         }
       },
-      drawPoints: function(pointsMap) {
+      drawBoxes: function(boxMap) {
         var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
         // If user just clicked a new label...
@@ -274,27 +267,15 @@
           // ...then reset the old canvas refresh interval.
           clearInterval(this.canvasRefreshInterval)
         }
-        // Look for and draw bounding points every 100ms
-        //const interval_ms = 100;
-        //changed from 100 to 1000
+        // Look for and draw bounding boxes every 100ms
         const interval_ms = 100;
         const erase_on_iteration = 2;
         var i = 0;
-        //if both points have confidence greater than keypoint threshold
-        //AND
-        //both points are in the list of joint pairs as defined by https://github.com/dmlc/gluon-cv/blob/master/gluoncv/utils/viz/keypoints.py
-
-        //joint_visible = confidence[:, :, 0] > keypoint_thresh
-        var joint_pairs = [[0, 1], [1, 3], [0, 2], [2, 4],
-                   [5, 6], [5, 7], [7, 9], [6, 8], [8, 10],
-                   [5, 11], [6, 12], [11, 12],
-                   [11, 13], [12, 14], [13, 15], [14, 16]];
         this.canvasRefreshInterval = setInterval(function () {
           i++;
-          // erase old bounding points
+          // erase old bounding boxes
           if (!this.player.paused() && i % erase_on_iteration === 0) {
             i=0;
-            console.log("erasing *************************")
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
             ctx.strokeStyle = "red";
@@ -305,58 +286,18 @@
           }
           // Get current player timestamp to the nearest 1/10th second
           var player_timestamp = Math.round(this.player.currentTime()*10.0);
-          // If we have a pose for the player's timestamp...
-          if (pointsMap.has(player_timestamp)) {
-            var joints = (pointsMap.get(player_timestamp))[0];
-            //for each joint pair instance 
-            for (var j=0; j < joint_pairs.length; j++) {
-                var joint1 = joint_pairs[j][0];
-                var joint2 = joint_pairs[j][1];
-                //console.log("joint1 is" + joint1)
-                //console.log("joint2 is " + joint2)
-                if(joints.confidence[joint1][0] > 0.2 && joints.confidence[joint2][0] > 0.2) {
-                    ctx.moveTo(joints.points[joint1][0],joints.points[joint1][1]);
-                    ctx.lineTo(joints.points[joint2][0],joints.points[joint2][1]);
-                    ctx.fillRect(joints.points[joint1][0],joints.points[joint1][1],5,5);
-                    ctx.fillRect(joints.points[joint2][0],joints.points[joint2][1],5,5);
-                    //console.log("drawing segment from " + joint1 + " to " + joint2)
-                }
-            }
-
-            /* // For each box instance...
+          // If we have a box for the player's timestamp...
+          if (boxMap.has(player_timestamp)) {
+            var faces = (boxMap.get(player_timestamp));
+            // For each box instance...
             faces.forEach( drawMe => {
-                console.log("number of points")
-                console.log(drawMe.points.length)
-                ctx.moveTo(drawMe.points[0][0] ,drawMe.points[0][1]); 
-                //ctx.moveTo(drawMe.points[0][0] *canvas.width,drawMe.points[0][1]*canvas.height); 
-                var cut =false;
-                for (var j =1 ; j < drawMe.points.length; j++) {
-                    //console.log(drawMe.points[j][0]);
-                    //console.log(drawMe.points[j][1]);
-                    //console.log(drawMe.points[j][0]*canvas.width);
-                    //console.log(drawMe.points[j][1]*canvas.height);
-                    console.log(drawMe.confidence[j][0]);
-                    if(drawMe.confidence[j][0] < 0.2) {
-                        cut = true;
-                        console.log("cut now");
-                        continue;
-                        
-                    }
-                    if(cut==true) {
-                        ctx.moveTo(drawMe.points[j][0],drawMe.points[j][1]);
-                        //ctx.moveTo(drawMe.points[j][0]*canvas.width,drawMe.points[j][1]*canvas.height);
-                        cut = false;
-                    } else {
-                        ctx.lineTo(drawMe.points[j][0],drawMe.points[j][1]);
-                        //ctx.lineTo(drawMe.points[j][0]*canvas.width,drawMe.points[j][1]*canvas.height);
-                    }
-                    
-                    
-              }
-              
-            }); */
+              console.log(drawMe.x);
+              console.log(drawMe.y);
+              ctx.rect(drawMe.x, drawMe.y, drawMe.width, drawMe.height);
+              // Draw object name and confidence score
+              ctx.fillText(drawMe.name + " (" + drawMe.confidence + "%)", (drawMe.x + drawMe.width / 2), drawMe.y - 10);
+            });
           }
-          //ctx.closePath();
           ctx.stroke();
         }.bind(this), interval_ms);
       },
@@ -372,7 +313,6 @@
         var es_data = this.elasticsearch_data;
         es_data.forEach( function(record) {
           // Define timestamp with millisecond resolution
-          record.Name = "Pose"
           const millisecond = Math.round(record.Timestamp);
           if (this.selectedLabel) {
             // No label has been selected, so enumerate timestamps for all label names.

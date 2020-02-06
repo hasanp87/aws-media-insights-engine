@@ -528,6 +528,46 @@ Resources:
                 Resource: !Ref "snsRekognitionTopic"
                 Effect: "Allow"
 
+  PoseDetectRole:
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies: 
+        - 
+          PolicyName: "poseDetectLambdaPolicy"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Effect: "Allow"
+                Action: 
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                Resource: !Sub "arn:aws:s3:::${DataPlaneBucket}/*"
+              - 
+                Effect: "Allow"
+                Action: "lambda:InvokeFunction"
+                Resource: !Ref DataPlaneHandlerArn
+              - 
+                Effect: "Allow"
+                Action: "sagemaker:InvokeEndpoint"
+                Resource: 'arn:aws:sagemaker:us-east-1:208480242416:endpoint/gluoncv-yolo3-demo-2020-01-27-10-35-44'
+
+                Effect: "Allow"
+                Action: "sagemaker:InvokeEndpoint"
+                Resource: 'arn:aws:sagemaker:us-east-1:208480242416:endpoint/gluoncv-alpha-pose-demo-2020-01-24-18-45-13'
+
+
   # Lambda functions
 
   # This is a generic Lambda function for getting metadata from JSON file in S3:
@@ -1146,45 +1186,6 @@ Resources:
           DATAPLANE_BUCKET: !Ref "DataPlaneBucket"
           botoConfig: '{"user_agent": "aws-tm-mie/python3.7/lambda"}'
 
-  PoseDetectRole:
-    Type: "AWS::IAM::Role"
-    Properties: 
-      AssumeRolePolicyDocument: 
-        Version: "2012-10-17"
-        Statement: 
-          - 
-            Effect: "Allow"
-            Principal: 
-              Service: 
-                - "lambda.amazonaws.com"
-            Action: 
-              - "sts:AssumeRole"
-      Path: "/"
-      Policies: 
-        - 
-          PolicyName: "poseDetectLambdaPolicy"
-          PolicyDocument: 
-            Version: "2012-10-17"
-            Statement: 
-              - 
-                Effect: "Allow"
-                Action: 
-                  - "s3:GetObject"
-                  - "s3:PutObject"
-                Resource: !Sub "arn:aws:s3:::${DataPlaneBucket}/*"
-              - 
-                Effect: "Allow"
-                Action: "lambda:InvokeFunction"
-                Resource: !Ref DataPlaneHandlerArn
-              - 
-                Effect: "Allow"
-                Action: "sagemaker:InvokeEndpoint"
-                Resource: 'arn:aws:sagemaker:us-east-1:208480242416:endpoint/gluoncv-yolo3-demo-2020-01-27-10-35-44'
-
-                Effect: "Allow"
-                Action: "sagemaker:InvokeEndpoint"
-                Resource: 'arn:aws:sagemaker:us-east-1:208480242416:endpoint/gluoncv-alpha-pose-demo-2020-01-24-18-45-13'
-
   BatchPoseDetection:
     Type: "AWS::Lambda::Function"
     Properties:
@@ -1210,7 +1211,7 @@ Resources:
           OPERATOR_NAME: "BatchPoseDetection"
           ENDPOINT_NAME_1: "GluonCV-yolo3-Demo-2020-01-27-10-35-44"
           ENDPOINT_NAME_2: "GluonCV-alpha-pose-Demo-2020-01-24-18-45-13"
-          MIN_CONFIDENCE: "50"
+          MIN_CONFIDENCE: "0.5"
           DataplaneEndpoint: !Ref "DataPlaneEndpoint"
           DATAPLANE_BUCKET: !Ref "DataPlaneBucket"
           botoConfig: '{"user_agent": "aws-tm-mie/python3.7/lambda"}'

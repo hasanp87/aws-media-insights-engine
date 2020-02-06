@@ -793,7 +793,7 @@ zip -r9 start_label_detection.zip start_label_detection.py
 zip -r9 check_label_detection_status.zip check_label_detection_status.py
 zip -r9 start_person_tracking.zip start_person_tracking.py
 zip -r9 check_person_tracking_status.zip check_person_tracking_status.py
-zip -r9 batch_pose_detection.zip start_batch_pose_detection.py
+zip -r9 start_batch_pose_detection.zip start_batch_pose_detection.py
 zip -r9 start_batch_content_moderation.zip start_batch_content_moderation.py
 zip -r9 start_batch_face_search.zip start_batch_face_search.py
 zip -r9 start_batch_text_detection.zip start_batch_text_detection.py

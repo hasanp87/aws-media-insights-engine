@@ -46,6 +46,14 @@
                             title="Faces"
                             @click="currentView = 'FaceDetection'"
                           />
+                          <b-tab
+                            title="Sports gear"
+                            @click="currentView = 'CustomObjects'"
+                          />
+                          <b-tab
+                            title="Pose"
+                            @click="currentView = 'Pose'"
+                          />
                         </b-tabs>
                       </div>
                     </b-row>
@@ -115,7 +123,6 @@
                 :s3Uri="s3_uri"
                 :filename="filename"
                 :videoUrl="videoOptions.sources[0].src"
-                :redactedLocations="redactedAssetLocations"
               />
             </b-row>
           </div>
@@ -149,6 +156,24 @@
         component: new Promise(function(resolve) {
           setTimeout(function() {
             resolve(import('@/components/LabelObjects.vue'));
+        }, 1000);
+        }),
+        loading: Loading
+      }),
+
+      CustomObjects: () => ({
+        component: new Promise(function(resolve) {
+          setTimeout(function() {
+            resolve(import('@/components/CustomObjects.vue'));
+        }, 1000);
+        }),
+        loading: Loading
+      }),
+
+      Pose: () => ({
+        component: new Promise(function(resolve) {
+          setTimeout(function() {
+            resolve(import('@/components/Pose.vue'));
         }, 1000);
         }),
         loading: Loading
@@ -216,7 +241,6 @@
     data: function () {
       return {
         s3_uri: '',
-        redactedAssetLocations: [],
         filename: '',
         currentView: 'LabelObjects',
         showElasticSearchAlert: false,
@@ -239,9 +263,8 @@
     computed: {
       ...mapState(['Confidence'])
     },
-    created: async function () {
-          await this.getAssetMetadata();
-          await this.getRedactedCopies();
+    created() {
+          this.getAssetMetadata();
       },
     methods: {
       async getAssetMetadata () {
@@ -268,7 +291,7 @@
               if (this.filename.substring(this.filename.lastIndexOf(".")) === ".mp4") {
                 this.mediaType = "video/mp4"
               }
-              this.getVideoUrl();
+              this.getVideoUrl()
             })
           });
           this.updateAssetId();
@@ -295,53 +318,6 @@
             this.videoOptions.sources[0].src = data
         }).catch(err => console.error(err));
         })
-      },
-      async getPresignedUrl (url_data, token) {
-        let download_url_response = await fetch(process.env.VUE_APP_DATAPLANE_API_ENDPOINT + '/download', {
-              method: 'POST',
-              mode: 'cors',
-              headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token
-              },
-              body: JSON.stringify(url_data)
-            }
-          )
-          if (download_url_response.status === 200) {
-            let download_url_result = await download_url_response.text()
-            return download_url_result
-            }
-      },
-      async getRedactedCopies () {
-        const token = await this.$Amplify.Auth.currentSession().then(data =>{
-          var accessToken = data.getIdToken().getJwtToken()
-          return accessToken
-        })
-        const asset_id = this.$route.params.asset_id;
-        //todo: change name from stitcher to frameStitcher
-        let response = await fetch(process.env.VUE_APP_DATAPLANE_API_ENDPOINT+'/metadata/'+ asset_id + '/frameStitcher', {
-            method: 'get',
-            headers: {
-              'Authorization': token
-          }
-        })
-        if (response.status === 200) {
-          let result = await response.json()
-          let redacted_s3_keys = result.results.redactedAssets
-          console.log('redacted_copies', redacted_s3_keys)
-          let bucket = this.s3_uri.split("/")[2];
-          for (var i = 0, len = redacted_s3_keys.length; i < len; i++) {
-            let versions = Object.keys(redacted_s3_keys[i])
-            console.log(versions)
-            for (var x = 0, ver_len = versions.length; x < ver_len; x++) {
-              const data = { "S3Bucket": bucket, "S3Key": redacted_s3_keys[i][versions[x]] }
-              console.log(data)
-              let presigned_url = await this.getPresignedUrl(data, token)
-              console.log(presigned_url)
-              this.redactedAssetLocations.push({"Type": versions[x], "Location": presigned_url})
-            }
-          }
-        }
       },
       updateAssetId () {
         this.$store.commit('updateAssetId', this.$route.params.asset_id);
