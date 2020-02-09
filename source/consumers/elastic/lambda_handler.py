@@ -14,7 +14,7 @@ dataplane_bucket = os.environ['DataplaneBucket']
 s3 = boto3.client('s3')
 
 # These names are the lowercase version of OPERATOR_NAME defined in /source/operators/operator-library.yaml
-supported_operators = ["transcribe", "translate", "genericdatalookup", "labeldetection", "celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "key_phrases","batchposedetection","frameextractor"]
+supported_operators = ["transcribe", "translate", "genericdatalookup", "labeldetection", "batchtextdetection", "batchlogodetection", "batchcustomlabeldetection","batchposedetection","celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "key_phrases"]
 
 
 def normalize_confidence(confidence_value):
@@ -335,72 +335,53 @@ def process_logo_detection(asset, workflow, results):
     if isinstance(metadata, list):
         # handle paged results
         for page in metadata:
-            if "Logos" in page:
-                for item in page["Logos"]:
+            if "frames_result" in page:
+                for item in page["frames_result"]:
                     try:
                         item["Operator"] = "logo_detection"
                         item["Workflow"] = workflow
+                        item["Confidence"] = float(item["Confidence"])*100
                         if "Logo" in item:
                             # Flatten the inner Logo array
-                            item["Confidence"] = float(item["Logo"]["Confidence"])*100
-                            item["Name"] = item["Logo"]["Name"]
-                            item["Instances"] = ''
-                            if 'Instances' in item["Logo"]:
-                                for box in item["Logo"]["Instances"]:
-                                    box["BoundingBox"]["Height"] = float(box["BoundingBox"]["Height"]) / 720
-                                    box["BoundingBox"]["Top"] = float(box["BoundingBox"]["Top"]) / 720
-                                    box["BoundingBox"]["Left"] = float(box["BoundingBox"]["Left"]) / 1280
-                                    box["BoundingBox"]["Width"] = float(box["BoundingBox"]["Width"]) / 1280
-                                    box["Confidence"] = float(box["Confidence"])*100
-                                item["Instances"] = item["Logo"]["Instances"]
-                            item["Parents"] = ''
-                            if 'Parents' in item["Logo"]:
-                                item["Parents"] = item["Logo"]["Parents"]
+                            item["BoundingBox"]=item["Logo"]["BoundingBox"]
                             # Delete the flattened array
                             del item["Logo"]
+                        print(asset, ":", item)
                         extracted_items.append(item)
                     except KeyError as e:
                         print("KeyError: " + str(e))
                         print("Item: " + json.dumps(item))
     else:
         # these results are not paged
-        if "Logos" in metadata:
-            for item in metadata["Logos"]:
+        if "frames_result" in metadata:
+            for item in metadata["frames_result"]:
                 try:
                     item["Operator"] = "logo_detection"
                     item["Workflow"] = workflow
+                    item["Confidence"] = float(item["Confidence"])*100
                     if "Logo" in item:
                         # Flatten the inner Logo array
-                        item["Confidence"] = float(item["Logo"]["Confidence"])*100
-                        item["Name"] = item["Logo"]["Name"]
-                        item["Instances"] = ''
-                        if 'Instances' in item["Logo"]:
-                            for box in item["Logo"]["Instances"]:
-                                box["BoundingBox"]["Height"] = float(box["BoundingBox"]["Height"]) / 720
-                                box["BoundingBox"]["Top"] = float(box["BoundingBox"]["Top"]) / 720
-                                box["BoundingBox"]["Left"] = float(box["BoundingBox"]["Left"]) / 1280
-                                box["BoundingBox"]["Width"] = float(box["BoundingBox"]["Width"]) / 1280
-                                box["Confidence"] = float(box["Confidence"])*100
-                            item["Instances"] = item["Logo"]["Instances"]
-                        item["Parents"] = ''
-                        if 'Parents' in item["Logo"]:
-                            item["Parents"] = item["Logo"]["Parents"]
+                        item["BoundingBox"]=item["Logo"]["BoundingBox"]
                         # Delete the flattened array
                         del item["Logo"]
+                    print(asset, ":", item)
                     extracted_items.append(item)
                 except KeyError as e:
                     print("KeyError: " + str(e))
                     print("Item: " + json.dumps(item))
     bulk_index(es, asset, "logos", extracted_items)
 
-def process_pose_detection(asset, workflow, results):
-    # This function puts pose detection data in Elasticsearch.
-    # The pose detection raw data was in inconsistent with Confidence and BoundingBox fields in Rekognition.
+def process_custom_label_detection(asset, workflow, results):
+    # This function puts custom label detection data in Elasticsearch.
+    # The custom label detection raw data was in inconsistent with Confidence and BoundingBox fields in Rekognition.
     # So, those fields are modified in this function, accordingly.
+    print("results")
+    print(results)
     metadata = json.loads(results)
+    print("metadata")
+    print(metadata)
     es = connect_es(es_endpoint)
     extracted_items = []
-    # We can tell if json results are paged by checking to see if the json results are an instance of the list type.
     # We can tell if json results are paged by checking to see if the json results are an instance of the list type.
     if isinstance(metadata, list):
         # handle paged results
@@ -408,12 +389,66 @@ def process_pose_detection(asset, workflow, results):
             if "frames_result" in page:
                 for item in page["frames_result"]:
                     try:
-                        item["Operator"] = "batch_pose_detection"
+                        item["Operator"] = "batchCustomLabelDetection"
                         item["Workflow"] = workflow
-                        item["Confidence"] = 75
+                        item["Confidence"] = float(item["Confidence"])
+                        if "Text" in item:
+                            # Flatten the inner Text array
+                            item["BoundingBox"]=item["Text"]["BoundingBox"]
+                            # Delete the flattened array
+                            del item["Text"]
+                        print(asset, ":", item)
+                        extracted_items.append(item)
+                    except KeyError as e:
+                        print("KeyError: " + str(e))
+                        print("Item: " + json.dumps(item))
+    else:
+        # these results are not paged
+        if "frames_result" in metadata:
+            for item in metadata["frames_result"]:
+                try:
+                    item["Operator"] = "batchCustomLabelDetection"
+                    item["Workflow"] = workflow
+                    item["Confidence"] = float(item["Confidence"])
+                    if "Text" in item:
+                        # Flatten the inner Text array
+                        item["BoundingBox"]=item["Text"]["BoundingBox"]
+                        # Delete the flattened array
+                        del item["Text"]
+                    print(asset, ":", item)
+                    extracted_items.append(item)
+                except KeyError as e:
+                    print("KeyError: " + str(e))
+                    print("Item: " + json.dumps(item))
+    print("inserting in elastic cache")
+    print(extracted_items)
+    bulk_index(es, asset, "customLabels", extracted_items)
+
+def process_pose_detection(asset, workflow, results):
+    # This function puts pose detection data in Elasticsearch.
+    # The pose detection raw data was in inconsistent with Confidence and BoundingBox fields in Rekognition.
+    # So, those fields are modified in this function, accordingly.
+    print("results")
+    print(results)
+    metadata = json.loads(results)
+    print("metadata")
+    print(metadata)
+    es = connect_es(es_endpoint)
+    extracted_items = []
+    # We can tell if json results are paged by checking to see if the json results are an instance of the list type.
+    if isinstance(metadata, list):
+        # handle paged results
+        for page in metadata:
+            if "frames_result" in page:
+                for item in page["frames_result"]:
+                    try:
+                        item["Operator"] = "batchPoseDetection"
+                        item["Workflow"] = workflow
+                        
                         if "Pose" in item:
-                            # Flatten the inner Logo array
-                            item["segments"]=item["Pose"]["segments"]
+                            # Flatten the inner Pose array
+                            item["points"]=item["Pose"]["points"]
+                            item["confidence"] = item["Pose"]["confidence"]
                             # Delete the flattened array
                             del item["Pose"]
                         print(asset, ":", item)
@@ -426,12 +461,12 @@ def process_pose_detection(asset, workflow, results):
         if "frames_result" in metadata:
             for item in metadata["frames_result"]:
                 try:
-                    item["Operator"] = "batch_pose_detection"
+                    item["Operator"] = "batchPoseDetection"
                     item["Workflow"] = workflow
-                    item["Confidence"] = 75
                     if "Pose" in item:
-                        # Flatten the inner Logo array
-                        item["segments"]=item["Pose"]["segments"]
+                        # Flatten the inner Pose array
+                        item["points"]=item["Pose"]["points"]
+                        item["confidence"] = item["Pose"]["confidence"]
                         # Delete the flattened array
                         del item["Pose"]
                     print(asset, ":", item)
@@ -439,7 +474,55 @@ def process_pose_detection(asset, workflow, results):
                 except KeyError as e:
                     print("KeyError: " + str(e))
                     print("Item: " + json.dumps(item))
-    bulk_index(es, asset, "poses", extracted_items)
+    print("inserting in elastic cache")
+    print(extracted_items)
+    bulk_index(es, asset, "pose", extracted_items)
+
+
+def process_textdetection(asset, workflow, results):
+    # This function puts logo detection data in Elasticsearch.
+    # The logo detection raw data was in inconsistent with Confidence and BoundingBox fields in Rekognition.
+    # So, those fields are modified in this function, accordingly.
+    metadata = json.loads(results)
+    es = connect_es(es_endpoint)
+    extracted_items = []
+    # We can tell if json results are paged by checking to see if the json results are an instance of the list type.
+    if isinstance(metadata, list):
+        # handle paged results
+        for page in metadata:
+            if "frames_result" in page:
+                for item in page["frames_result"]:
+                    try:
+                        item["Operator"] = "text_detection"
+                        item["Workflow"] = workflow
+                        item["Confidence"] = float(item["Confidence"])
+                        if "Text" in item:
+                            # Flatten the inner Logo array
+                            item["BoundingBox"]=item["Text"]["BoundingBox"]
+                            # Delete the flattened array
+                            del item["Text"]
+                        extracted_items.append(item)
+                    except KeyError as e:
+                        print("KeyError: " + str(e))
+                        print("Item: " + json.dumps(item))
+    else:
+        # these results are not paged
+        if "frames_result" in metadata:
+            for item in metadata["frames_result"]:
+                try:
+                    item["Operator"] = "text_detection"
+                    item["Workflow"] = workflow
+                    item["Confidence"] = float(item["Confidence"])
+                    if "Text" in item:
+                        # Flatten the inner Logo array
+                        item["BoundingBox"]=item["Text"]["BoundingBox"]
+                        # Delete the flattened array
+                        del item["Text"]
+                    extracted_items.append(item)
+                except KeyError as e:
+                    print("KeyError: " + str(e))
+                    print("Item: " + json.dumps(item))
+    bulk_index(es, asset, "textdetection", extracted_items)
 
 def process_label_detection(asset, workflow, results):
     # Rekognition label detection puts labels on an inner array in its JSON result, but for ease of search in Elasticsearch we need those results as a top level json array. So this function does that.
@@ -717,6 +800,14 @@ def lambda_handler(event, context):
                     # Route event to process method based on the operator type in the event.
                     # These names are the lowercase version of OPERATOR_NAME defined in /source/operators/operator-library.yaml
                     if operator in supported_operators:
+                        if operator == "batchtextdetection":
+                            process_textdetection(asset_id, workflow, metadata["Results"])
+                        if operator == "batchlogodetection":
+                            process_logo_detection(asset_id, workflow, metadata["Results"])
+                        if operator == "batchcustomlabeldetection":
+                            process_custom_label_detection(asset_id, workflow, metadata["Results"])
+                        if operator == "batchposedetection":
+                            process_pose_detection(asset_id, workflow, metadata["Results"])
                         if operator == "transcribe":
                             process_transcribe(asset_id, workflow, metadata["Results"])
                         if operator == "translate":
@@ -725,8 +816,6 @@ def lambda_handler(event, context):
                             process_logo_detection(asset_id, workflow, metadata["Results"])
                         if operator == "labeldetection":
                             process_label_detection(asset_id, workflow, metadata["Results"])
-                        if operator == "batchposedetection":
-                            process_pose_detection(asset_id, workflow, metadata["Results"])
                         if operator == "celebrityrecognition":
                             process_celebrity_detection(asset_id, workflow, metadata["Results"])
                         if operator == "contentmoderation":
@@ -739,6 +828,7 @@ def lambda_handler(event, context):
                             process_entities(asset_id, workflow, metadata["Results"])
                         if operator == "key_phrases":
                             process_keyphrases(asset_id, workflow, metadata["Results"])
+                            
                     else:
                         print("We do not store {operator} results".format(operator=operator))
                 else:
@@ -752,3 +842,4 @@ def lambda_handler(event, context):
             else:
                 print("Deleting {operator} metadata for asset {asset}".format(operator=operator, asset=asset_id))
                 # es = connect_es(es_endpoint)
+
