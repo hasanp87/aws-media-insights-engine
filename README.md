@@ -1,209 +1,130 @@
-# Media Insights Engine
+This workshop is built using AWS Media Insights Engine https://github.com/awslabs/aws-media-insights-engine
 
-Welcome to the Media Insights Engine (MIE) project!
+The objective of the workshop is to build custom ML model inference on video assets in Media Insights Engine (MIE) . The use case here is "pose detection" in a video. We will use a AWS SageMaker inference pipeline of 2 pre-trained deep learning models hosted on a single endpoint. 
 
-MIE is a framework to accelerate the development of serverless applications that process video, images, audio, and text with artificial intelligence services and multimedia services on AWS. MIE is most often used to: 
 
-1. Create media analysis workflows using [Amazon Rekognition](https://aws.amazon.com/rekognition/), [Amazon Transcribe](https://aws.amazon.com/transcribe/), [Amazon Translate](https://aws.amazon.com/translate/), [Amazon Cognito](https://aws.amazon.com/cognito/), [Amazon Polly](https://aws.amazon.com/polly/), and [AWS Elemental MediaConvert](https://aws.amazon.com/mediaconvert/).
-2. Build analytical applications on top of data extracted by workflows and saved in the [Amazon Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/)
+# Components : 
 
-MIE includes a demo GUI for video content analysis and search. The [Implementation Guide](https://github.com/awslabs/aws-media-insights-engine/blob/master/IMPLEMENTATION_GUIDE.md) explains how to build other applications with MIE. 
+1) Pre-trained models:
 
+   Top down strategy for pose detection. First, detect persons in bounding boxes from an object detection model. Second, estimate pose from key joints of the body. Gluoncv toolkit on MXNet framework is used here with yolov3 person detector + alpha pose estimator.
+   https://gluon-cv.mxnet.io/build/examples_pose/demo_alpha_pose.html#sphx-glr-build-examples-pose-demo-alpha-pose-py
+   
+2) SageMaker inference pipeline:
 
-# Installation
-You can deploy MIE and the demo GUI in your AWS account with the following one-click deploy buttons:
+   Model inference is hosted on a single SageMaker endpoint with inference pipeline of person detector + pose estimator. A custom MIE operator is created for inference with SageMaker.
+   https://docs.aws.amazon.com/sagemaker/latest/dg/inference-pipelines.html
+   
+3) Serverless video frame processing:
 
-Region| Launch
-------|-----
-US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/media-insights-solution/v0.1.7/cf/media-insights-stack.template)
-US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/media-insights-solution/v0.1.7/cf/media-insights-stack.template)
+   Video is pre-processed at a desired sampling rate (FPS) to generate image frames and their associated timestamps in S3. This  is achieved with opencv library which is added as a lambda layer. A custom MIE operator is created for video frame processing.
+   
+4) Custom MIE operators and workflow:
 
+MIE generates workflows using Step Function service state machines. Operators are created by implementing resources (e.g. lambda, sagemaker) that can plug in to MIE state machines as tasks and registering them as operators using the MIE API. 
+Operator inputs include a list of Media, Metadata and the operator Configuration plus ids for the workflow execution the operator is part of and the asset the operator is processing.
 
-The default settings for the template will deploy MIE and the demo GUI. You must set the parameters for `Stack name` and `AdminEmail`.
+5) UI integration:
 
-For more information about stack deployment, see the section on [installation parameters](#installation-parameters).
-
-
-# Cost
-
-Most AWS accounts include a free tier for the services used in MIE. However, if your usage exceeds the free tier allotments then you will be responsible for the cost of the AWS services used while running MIE. 
-
-The cost depends on the number of and length of uploaded videos, and data transfer fees, which will vary depending on the number of users and frequency of viewing. Cost also depends on video content. For example, videos with lots of speech will incur higher costs for text operations. You will also be charged for storing media files in S3.
-
-As of the date of publication, the costs for running this solution in the us-east-1 (N. Virginia) region are estimated below. Prices for services are tiered to distinguish between heavy and lite users. The estimates below are based on prices for lite users.
-
-## Video Operators 
-See [https://aws.amazon.com/rekognition/pricing/](https://aws.amazon.com/rekognition/pricing/).
-
-Object Detection ($0.10 per min)
-Celebrity Recognition ($0.10 per min)
-Content Moderation ($0.10 per min)
-Face Detection ($0.10 per min)
-Face Search ($0.10 per min)
-
-## Audio Operators
-See [https://aws.amazon.com/transcribe/pricing/](https://aws.amazon.com/rekognition/pricing/).
-
-Transcribe ($.024 per min)
-
-## Text Operators
-Comprehend Key Phrases ($0.000001 per character)
-Comprehend Entities ($0.000001 per character)
-Polly ($0.000004 per character)
-Translate ($0.000015 per character)
-
-## Data Plane and Control Plane
-[Elasticsearch](https://aws.amazon.com/elasticsearch-service/pricing/)(r4.large.elasticsearch) $0.196 per Hour
-[S3](https://aws.amazon.com/s3/pricing/) $0.023 per GB
-
-## Lambda, API Gateway, DynamoDB, and DynamoDB Streams 
-The free-tier for Lambda, API Gateway, DynamoDB, and DynamoDB Streams should cover most common MIE use cases.
-
-## Pricing Example:
-
-The cost to analyzing 4 hours of video with 64 pages (~165k characters) of speech through every operator is $128.
-
-This scenario is loosely based on "A Christmas Carol" by Charles Dickens, which includes ~165k characters and ~3 hours 50 min speech duration ([reference](https://aws.amazon.com/polly/pricing/)).
-
-# Limits
-
-The latest MIE release has been verified to support videos up to 2 hours in duration. 
-
-# Architecture Overview
-
-Media Insights Engine is a _serverless_ architecture on AWS. The following diagram is an overview of the major components of MIE and how they interact when an MIE workflow is executed.  
-
-![](doc/images/MIE-execute-workflow-architecture.png)
-
-
-## Workflow API
-Triggers the execution of a workflow. Also triggers create, update and delete workflows and operators.  Monitors the status of workflows.
-
-## Control plane
-Executes the AWS Step Functions state machine for the workflow against the provided input.  Workflow state machines are generated from MIE operators.  As operators within the state machine are executed, the interact with the MIE data plane to store and retrieve derived asset and metadata generated from the workflow.  
-
-## Operators
-Generated state machines that perform media analysis or transformation operation.
-
-## Workflows
-Generated state machines that execute a number of operators in sequence.
-
-## Data plane
-Stores media assets and their associated metadata that are generated by workflows. 
-
-## Data plane API
-
-Trigger create, update, delete and retrieval of media assets and their associated metadata.
-
-## Data plane pipeline
-
-Stores metadata for an asset that can be retrieved as a single block or pages of data using the objects AssetId and Metadata type.  Writing data to the pipeline triggers a copy of the data to be stored in a **Kinesis Stream**.
-
-### **Data plane pipeline consumer**
-
-A lambda function that consumes data from the data plane pipeline and stores it (or acts on it) in another downstream data store.  Data can be stored in different kind of data stores to fit the data management and query needs of the application.  There can be 0 or more pipeline consumers in a MIE application. 
-
-# Installation Parameters
-
-You can deploy MIE and the demo GUI in your AWS account with the [one-click deploy buttons](#installation) shown above. 
-
-## Required parameters
-
-**Stack Name**: Name of stack. Defaults to `mie`.
-
-**System Configuration**
-* **MaxConcurrentWorkflows**: Maximum number of workflows to run concurrently. When the maximum is reached, additional workflows are added to a wait queue. Defaults to `10`.
-
-**Operators** 
-* **Enable Operator Library Deployment**: If set to true, deploys the operator library. Defaults to `true`.
-
-**Workflows**
-* **DeployTestWorkflow**: If set to true, deploys test workflow which contains operator, stage and workflow stubs for integration testing. Defaults to `false`.
-* **DeployInstantTranslateWorkflow**: If set to true, deploys Instant Translate Workflow which takes a video as input and transcribes, translates and creates an audio file in the new language. Defaults to `false`.
-* **DeployRekognitionWorkflow**: If set to true, deploys Rekognition Workflows which process videos and images through Rekognition, Transcribe, Translate, etc. Defaults to `true`.
-* **DeployComprehendWorkflow**: If set to true, deploys a Comprehend Workflow which takes text as input and identifies key entities and phrases. Defaults to `false`.
-* **DeployKitchenSinkWorkflow**: If set to true, deploys the Kitchen Sink Workflow which contains all MIE operators. Defaults to `true`.
-
-**Sample Applications**
-* **DeployDemoSite**: If set to true, deploys a front end application to explore extracted metadata. Defaults to `true`.
-
-**Other parameters**
-* **DeployAnalyticsPipeline**: If set to true, deploys a metadata streaming pipeline that can be consumed by downstream analytics plaforms. Defaults to `true`.
-
-## Outputs
-
-After the stack successfully deploys, you can find important interface resources in the **Outputs** tab of the CloudFormation stack.
-
-**DataplaneApiEndpoint** is the endpoint for accessing dataplane APIs to create, update, delete and retrieve media assets
-
-**DataplaneBucket** is the S3 bucket used to store derived media (_derived assets_) and raw analysis metadata created by MIE workflows.
-
-**ElasticsearchEndpoint** is the endpoint of the Elasticsearch cluster used to store analysis metadata for search
-
-**MediaInsightsEnginePython37Layer** is a lambda layer required to build new operator lambdas
-
-**MediaInsightsWebAppUrl** is the Url for the sample Media Insights web application
-
-**WorkflowApiEndpoint** is the endpoint for accessing the Workflow APIs to create, update, delete and execute MIE workflows.
-
-**WorkflowCustomResourceArn** is the custom resource that can be used to create MIE workflows in CloudFormation scripts
-
-# Usage
-
-###  Sample application
-
-![](doc/images/MIEDemo.gif)
-
-The Media Insights sample application lets you upload videos, images, audio and text files for content analysis and add the results to a collection that can be searched to find media that has attributes you are looking for.  It runs an MIE workflow that extracts insights using many of the ML content analysis services available on AWS and stores them in a search engine for easy exploration.  A web based GUI is used to search and visualize the resulting data along-side the input media.  The analysis and transformations included in MIE workflow for this application include:
-
-* Proxy encode of videos and separation of video and audio tracks using **AWS Elemental MediaConvert**. 
-* Object, scene, and activity detection in images and video using **Amazon Rekognition**. 
-* Celebrity detection in images and video using **Amazon Rekognition**
-* Face search from a collection of known faces in images and video using **Amazon Rekognition**
-* Facial analysis to detect facial features and faces in images and videos to determine things like happiness, age range, eyes open, glasses, facial hair, etc. In video, you can also measure how these things change over time, such as constructing a timeline of the emotions expressed by an actor.  From **Amazon Rekognition**.
-* Unsafe content detection using **Amazon Rekognition**. Identify potentially unsafe or inappropriate content across both image and video assets. 
-* Convert speech to text from audio and video assets using **Amazon Transcribe**.
-* Convert text from one language to another using **Amazon Translate**.
-* Identify entities in text using **Amazon Comprehend**. 
-* Identify key phrases in text using **Amazon Comprehend**
-
-Data are stored in Amazon Elasticsearch Service and can be retrieved using _Lucene_ queries in the Collection view search page.
-
-### Example use cases for Media Insights Engine
+  The web app is modified to include an additional tab for 'Pose'. Pose inference is associated with the timestamp and visualized as an overlay during playback. 
+  
+  ![](doc/images/PoseInference.jpg)
+  
+ # Prerequisites : 
  
-MIE is a reusable architecture that can support many different applications.  Examples:
+  1. AWS account with available limits for 1 ml.g4dn.2xlarge instance for sagemaker hosting. (Alternatively, you can specify another instance type during cloud formation deployment) 
+  
+  2. AWS CLI configured. Refer  https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config
+  
+  3. Docker engine - installed and running
+
+ # Execution steps : 
  
-* **Content analysis analysis and search** - Detect objects, people, celebrities and sensitive content, transcribe audio and detect entities, relationships and sentiment.  Explore and analyze media using full featured search and advanced data visualization.  This use case is implemented in the included sample application.
-* **Automatic Transcribe and Translate** - Generate captions for Video On Demand content using speech recognition.  
-* **Content Moderation** - Detect and edit moderated content from videos.
+ 1. Clone this github repository 
 
-# Developers
+    git clone -b acvc2020 --single-branch https://github.com/awslabs/aws-media-insights-engine.git (HTTPS) 
+ 
+ 2. Create a S3 bucket in your AWS account. 
+    
+    Create the following environment variables in command line
 
-Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](https://gitter.im/awslabs/aws-media-insights-engine). This public chat forum was created to foster communication between MIE developers worldwide.
+     DIST_OUTPUT_BUCKET=[enter the name of your bucket here]
 
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/awslabs/aws-media-insights-engine)
+     VERSION=[enter an arbitrary version name here]
 
-MIE is built to be extended in the following ways:
+     REGION=[enter the name of the region in which you would like to build MIE]
+     
+     ** Make sure that Cognito is available in the region you select. https://docs.aws.amazon.com/general/latest/gr/aws-general.pdf#aws-service-information
+     
+ 3.  [10 minutes] 
+      Prerequisites : 
 
-* Run existing workflows with custom  configurations.
-* Create new operators for new types of media analysis or transformation
-* Create new workflows using the existing or new operators.
-* Stream data to new data storage services, such as Elasticsearch or Amazon Redshift.
+      a) install wget.
+      b) install and start docker engine.
 
-See the [Implementation Guide](https://github.com/awslabs/aws-media-insights-engine/blob/master/IMPLEMENTATION_GUIDE.md) for the MIE API reference and builder's guide.
+      Run the following build command in your terminal from the deployment directory:
 
-# Known Issues
+       cd aws-media-insights-engine/deployment
 
-Visit the Issue page in this repository for known issues and feature requests.
+      ./build-s3-dist.sh $DIST_OUTPUT_BUCKET $VERSION $REGION 
 
-# Contributing
+ 4.  Identify your 12 digit AWS AccountID https://docs.aws.amazon.com/IAM/latest/UserGuide/console_account-alias.html#FindingYourAWSId
+      
+     AccountId=[enter your 12 digit AWS account ID]. (12 digit only)
 
-See the [CONTRIBUTING](CONTRIBUTING.md) file for how to contribute.
+     Create a S3 bucket named 'pose-bucket-$REGION-$AccountId' to upload pose inference scripts. 
+     NOTE : The bucket has to follow the above format.
+     
+  5. Copy contents of models/ into the S3 bucket 'pose-bucket-$REGION-$AccountId'
 
-# License
+     models/* -> 'pose-bucket-$REGION-$AccountId'/*
+     
+  6. Make sure account limits are raised to support 1 'Amazon SageMaker Hosting' instance type. For sub-second inference, the default instance type used here is with GPU  'ml.g4dn.2xlarge'. It is however not required to use GPU instance. You can provide another instance type as a parameter during cloud formation deployment. 
+  
+    https://docs.aws.amazon.com/general/latest/gr/sagemaker.html
+  
+  7. [20 minutes] Step 3 created a cloud formation template in S3. Use the Amazon S3 URL (output from Step 3) and deploy the cloud formation template.
 
-See the [LICENSE](LICENSE.txt) file for our project's licensing.
+     https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html 
+     
+     - Provide a unique stack name.
+     - Provide AdminEmail (email address where you will receive credentials for the web app).
+     - Edit 'SagemakerEndpointInstanceType' to instance type of your choice for sagemaker hosting. 
+     - Click Next and Create Stack.
+     
+      
+  
+  8. Create a lambda layer for opencv-python (via console or command line). 
+  
+     [AWS Lambda Console]  ![](doc/images/LambdaLayer2.png)
+     
+     [Command line] https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/publish-layer-version.html
+  
+  9. Attach the lambda layer to the frame processing operator. Search for '*frameExtractor*' lambda function and add additional layer. 
+  
+     [AWS Lambda Console]  ![](doc/images/LambdaFunction.png)
+  
+  10. There are 3 example videos uploaded to this repository. You can download and upload them to the Media Insights Engine web app. 
+  
+      Videos are : 
+      https://www.pexels.com/video/a-boxer-training-in-a-boxing-gym-4438086/
 
-Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+      https://www.pexels.com/video/woman-doing-a-stretching-exercise-4536532/
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+      https://www.pexels.com/video/man-with-prosthetic-leg-practicing-in-a-gym-4108624/
+      
+ Upload any video (landscape mode only) .mp4 file (upto 10 minutes in length) through the MIE console. Choose 'Configure workflow' to turn off other AI services if not required. 
+Observe the pose inference results (**1 person pose only**) in a new tab named 'Pose' . 
+
+  11. Lastly, remember to be frugal and delete your cloud formation stack OR delete the sagemaker endpoint instance (you can recreate it from the stored model and endpoint configuration once again )
+
+  
+  
+     
+     
+
+     
+  
+
+
+
